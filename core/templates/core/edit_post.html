@@ -1,0 +1,36 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier ma publication - Pitastropha Social</title>
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+
+    <header class="navbar">
+        <h1>Pitastropha Social</h1>
+        <nav>
+            <a href="{% url 'home' %}">Retour à l'accueil</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="create-post">
+            <h2>Modifier ma publication</h2>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <textarea name="content" required>{{ post.content }}</textarea>
+
+                <button type="submit">Enregistrer les modifications</button>
+                <a href="{% url 'home' %}">Annuler</a>
+            </form>
+        </section>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon profil - Pitastropha Social</title>
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+
+    <header class="navbar">
+        <h1>Pitastropha Social</h1>
+
+        <nav>
+            <a href="{% url 'home' %}">Accueil</a>
+            <a href="{% url 'profile' %}">Mon profil</a>
+            <a href="{% url 'logout' %}">Déconnexion</a>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <section class="create-post">
+
+            <h2>Mon profil</h2>
+
+            <p>Présentez-vous aux autres membres de la communauté.</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'profile' in message.tags %}
+                        <p class="success-message">
+                            {{ message }}
+                        </p>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <label for="display_name">Nom affiché</label>
+
+                <input
+                    type="text"
+                    id="display_name"
+                    name="display_name"
+                    value="{{ profile.display_name }}"
+                    maxlength="100"
+                    placeholder="Votre nom"
+                >
+
+                <label for="city">Ville</label>
+
+                <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    value="{{ profile.city }}"
+                    maxlength="100"
+                    placeholder="Votre ville"
+                >
+
+                <label for="bio">Biographie</label>
+
+                <textarea
+                    id="bio"
+                    name="bio"
+                    maxlength="300"
+                    placeholder="Parlez un peu de vous..."
+                >{{ profile.bio }}</textarea>
+
+                <button type="submit">
+                    Enregistrer mon profil
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+</html>
