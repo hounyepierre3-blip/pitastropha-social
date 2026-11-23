@@ -10,77 +10,69 @@
 </head>
 <body>
 
-    <header class="navbar">
-        <h1>Pitastropha Social</h1>
+<header class="navbar">
+    <h1>Pitastropha Social</h1>
+    <nav>
+        <a href="{% url 'home' %}">Accueil</a>
+        <a href="{% url 'profile' %}">Mon profil</a>
+        <a href="{% url 'logout' %}">Déconnexion</a>
+    </nav>
+</header>
 
-        <nav>
-            <a href="{% url 'home' %}">Accueil</a>
-            <a href="{% url 'profile' %}">Mon profil</a>
-            <a href="{% url 'logout' %}">Déconnexion</a>
-        </nav>
-    </header>
+<main class="container">
+    <section class="create-post">
+        <h2>Mon profil</h2>
+        <p>Présentez-vous aux autres membres de la communauté.</p>
 
-    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                {% if 'profile' in message.tags %}
+                    <p class="success-message">{{ message }}</p>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
 
-        <section class="create-post">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
-            <h2>Mon profil</h2>
+            <label for="photo">Photo de profil</label>
 
-            <p>Présentez-vous aux autres membres de la communauté.</p>
-
-            {% if messages %}
-                {% for message in messages %}
-                    {% if 'profile' in message.tags %}
-                        <p class="success-message">
-                            {{ message }}
-                        </p>
-                    {% endif %}
-                {% endfor %}
+            {% if profile.photo %}
+                <img src="{{ profile.photo.url }}"
+                     alt="Photo de profil"
+                     width="120"
+                     height="120"
+                     style="object-fit: cover; border-radius: 50%; display: block; margin: 10px 0;">
             {% endif %}
 
-            <form method="POST">
-                {% csrf_token %}
+            <input type="file" id="photo" name="photo" accept="image/*">
 
-                <label for="display_name">Nom affiché</label>
+            <label for="display_name">Nom affiché</label>
+            <input type="text"
+                   id="display_name"
+                   name="display_name"
+                   value="{{ profile.display_name }}"
+                   maxlength="100"
+                   placeholder="Votre nom">
 
-                <input
-                    type="text"
-                    id="display_name"
-                    name="display_name"
-                    value="{{ profile.display_name }}"
-                    maxlength="100"
-                    placeholder="Votre nom"
-                >
+            <label for="city">Ville</label>
+            <input type="text"
+                   id="city"
+                   name="city"
+                   value="{{ profile.city }}"
+                   maxlength="100"
+                   placeholder="Votre ville">
 
-                <label for="city">Ville</label>
+            <label for="bio">Biographie</label>
+            <textarea id="bio"
+                      name="bio"
+                      maxlength="300"
+                      placeholder="Parlez un peu de vous...">{{ profile.bio }}</textarea>
 
-                <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value="{{ profile.city }}"
-                    maxlength="100"
-                    placeholder="Votre ville"
-                >
-
-                <label for="bio">Biographie</label>
-
-                <textarea
-                    id="bio"
-                    name="bio"
-                    maxlength="300"
-                    placeholder="Parlez un peu de vous..."
-                >{{ profile.bio }}</textarea>
-
-                <button type="submit">
-                    Enregistrer mon profil
-                </button>
-
-            </form>
-
-        </section>
-
-    </main>
+            <button type="submit">Enregistrer mon profil</button>
+        </form>
+    </section>
+</main>
 
 </body>
 </html>

@@ -9,156 +9,124 @@
     <link rel="stylesheet" href="{% static 'core/style.css' %}">
 </head>
 <body>
-
-    <header class="navbar">
-        <h1>Pitastropha Social</h1>
-
-        <nav>
-            <a href="{% url 'home' %}">Accueil</a>
-            <a href="#">Explorer</a>
-            <a href="#">Messages</a>
-            <a href="{% url 'profile' %}">Profil</a>
-
-            {% if user.is_authenticated %}
-                <span>Bonjour, {{ user.username }}</span>
-                <a href="{% url 'logout' %}">Déconnexion</a>
-            {% else %}
-                <a href="{% url 'login' %}">Connexion</a>
-                <a href="{% url 'register' %}">Inscription</a>
-            {% endif %}
-        </nav>
-    </header>
-
-    <main class="container">
-
-        <section class="welcome">
-            <h2>Bienvenue dans votre communauté !</h2>
-            <p>Connectez-vous, partagez vos idées et échangez.</p>
-        </section>
-
+<header class="navbar">
+    <h1>Pitastropha Social</h1>
+    <nav>
+        <a href="{% url 'home' %}">Accueil</a>
+        <a href="#">Explorer</a>
+        <a href="#">Messages</a>
+        <a href="{% url 'profile' %}">Profil</a>
         {% if user.is_authenticated %}
-            <section class="create-post">
-                <h3>Exprimez-vous</h3>
-
-                <form method="POST" action="{% url 'home' %}">
-                    {% csrf_token %}
-
-                    <textarea
-                        name="content"
-                        placeholder="Quoi de neuf aujourd'hui ?"
-                        required
-                    ></textarea>
-
-                    <button type="submit">Publier</button>
-                </form>
-            </section>
+            <span>Bonjour, {{ user.username }}</span>
+            <a href="{% url 'logout' %}">Déconnexion</a>
         {% else %}
-            <section class="create-post">
-                <h3>Exprimez-vous</h3>
-                <p>
-                    <a href="{% url 'login' %}">Connectez-vous</a>
-                    pour partager une publication.
-                </p>
-            </section>
+            <a href="{% url 'login' %}">Connexion</a>
+            <a href="{% url 'register' %}">Inscription</a>
         {% endif %}
+    </nav>
+</header>
 
-        <section class="feed">
-            <h2>Fil d'actualité</h2>
+<main class="container">
+    <section class="welcome">
+        <h2>Bienvenue dans votre communauté !</h2>
+        <p>Connectez-vous, partagez vos idées et échangez.</p>
+    </section>
 
-            {% for post in posts %}
-                <article class="post">
-
-                    <div class="post-author">
-                        <strong>{{ post.author }}</strong>
-                        <small>{{ post.created_at|date:"d/m/Y à H:i" }}</small>
-                    </div>
-
-                    <p>{{ post.content|linebreaksbr }}</p>
-
-                    <div class="post-actions">
-{% if user.is_authenticated and user.username == post.author %}
-    <div class="post-management">
-        <a href="{% url 'edit_post' post.id %}">✏️ Modifier</a>
-
-        <form method="POST" action="{% url 'delete_post' post.id %}"
-              onsubmit="return confirm('Voulez-vous vraiment supprimer cette publication ?');">
+    {% if user.is_authenticated %}
+    <section class="create-post">
+        <h3>Exprimez-vous</h3>
+        <form method="POST" action="{% url 'home' %}" enctype="multipart/form-data">
             {% csrf_token %}
-            <button type="submit">🗑️ Supprimer</button>
+            <textarea name="content" placeholder="Quoi de neuf aujourd'hui ?" required></textarea>
+
+            <div style="margin:18px 0;padding:15px;background:#f1f5f9;border-radius:10px;">
+                <label for="post-image" style="display:block;font-weight:bold;margin-bottom:10px;">
+                    📷 Ajouter une photo à votre publication
+                </label>
+                <input type="file" name="image" id="post-image" accept="image/*"
+                       style="display:block !important;visibility:visible !important;opacity:1 !important;width:100%;padding:10px;background:white;border:1px solid #ccc;border-radius:6px;">
+            </div>
+
+            <button type="submit">Publier</button>
         </form>
-    </div>
-{% endif %}
+    </section>
+    {% else %}
+    <section class="create-post">
+        <h3>Exprimez-vous</h3>
+        <p><a href="{% url 'login' %}">Connectez-vous</a> pour partager une publication.</p>
+    </section>
+    {% endif %}
 
-                        <div class="like-section">
-                            {% if user.is_authenticated %}
-                                <form method="POST" action="{% url 'toggle_like' post.id %}">
-                                    {% csrf_token %}
+    <section class="feed">
+        <h2>Fil d'actualité</h2>
+        {% for post in posts %}
+        <article class="post">
+            <div class="post-author">
+                <strong><a href="{% url 'public_profile' post.author %}">{{ post.author }}</a></strong>
+                <small>{{ post.created_at|date:"d/m/Y à H:i" }}</small>
+            </div>
 
-                                    <button type="submit">
-                                        {% if post.id in liked_post_ids %}
-                                            ❤️ J’aime déjà
-                                        {% else %}
-                                            🤍 J’aime
-                                        {% endif %}
-                                    </button>
-                                </form>
-                            {% else %}
-                                <a href="{% url 'login' %}">
-                                    Connectez-vous pour aimer
-                                </a>
-                            {% endif %}
+            <p>{{ post.content|linebreaksbr }}</p>
 
-                            <span>{{ post.likes.count }} J’aime</span>
-                        </div>
+            {% if post.image %}
+            <img src="{{ post.image.url }}" alt="Photo publiée par {{ post.author }}"
+                 style="width:100%;max-height:450px;object-fit:contain;border-radius:12px;margin:12px 0;">
+            {% endif %}
 
-                    </div>
+            <div class="post-actions">
+                {% if user.is_authenticated and user.username == post.author %}
+                <div class="post-management">
+                    <a href="{% url 'edit_post' post.id %}">✏️ Modifier</a>
+                    <form method="POST" action="{% url 'delete_post' post.id %}"
+                          onsubmit="return confirm('Voulez-vous vraiment supprimer cette publication ?');">
+                        {% csrf_token %}
+                        <button type="submit">🗑️ Supprimer</button>
+                    </form>
+                </div>
+                {% endif %}
 
-                    <div class="comments-section">
-                        <h4>Commentaires</h4>
+                <div class="like-section">
+                    {% if user.is_authenticated %}
+                    <form method="POST" action="{% url 'toggle_like' post.id %}">
+                        {% csrf_token %}
+                        <button type="submit">
+                            {% if post.id in liked_post_ids %}❤️ J’aime déjà{% else %}🤍 J’aime{% endif %}
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'login' %}">Connectez-vous pour aimer</a>
+                    {% endif %}
+                    <span>{{ post.likes.count }} J’aime</span>
+                </div>
+            </div>
 
-                        {% for comment in post.comments.all %}
-                            <div class="comment">
-                                <strong>{{ comment.author }}</strong>
-                                <p>{{ comment.content|linebreaksbr }}</p>
-                                <small>
-                                    {{ comment.created_at|date:"d/m/Y à H:i" }}
-                                </small>
-                            </div>
-                        {% empty %}
-                            <p>Aucun commentaire pour le moment.</p>
-                        {% endfor %}
+            <div class="comments-section">
+                <h4>Commentaires</h4>
+                {% for comment in post.comments.all %}
+                <div class="comment">
+                    <strong>{{ comment.author }}</strong>
+                    <p>{{ comment.content|linebreaksbr }}</p>
+                    <small>{{ comment.created_at|date:"d/m/Y à H:i" }}</small>
+                </div>
+                {% empty %}
+                <p>Aucun commentaire pour le moment.</p>
+                {% endfor %}
 
-                        {% if user.is_authenticated %}
-                            <form method="POST" action="{% url 'add_comment' post.id %}">
-                                {% csrf_token %}
-
-                                <textarea
-                                    name="content"
-                                    placeholder="Écrire un commentaire..."
-                                    required
-                                ></textarea>
-
-                                <button type="submit">Commenter</button>
-                            </form>
-                        {% else %}
-                            <p>
-                                <a href="{% url 'login' %}">Connectez-vous</a>
-                                pour commenter.
-                            </p>
-                        {% endif %}
-                    </div>
-
-                </article>
-
-            {% empty %}
-                <p>
-                    Aucune publication pour le moment.
-                    Soyez le premier à publier !
-                </p>
-            {% endfor %}
-
-        </section>
-
-    </main>
-
+                {% if user.is_authenticated %}
+                <form method="POST" action="{% url 'add_comment' post.id %}">
+                    {% csrf_token %}
+                    <textarea name="content" placeholder="Écrire un commentaire..." required></textarea>
+                    <button type="submit">Commenter</button>
+                </form>
+                {% else %}
+                <p><a href="{% url 'login' %}">Connectez-vous</a> pour commenter.</p>
+                {% endif %}
+            </div>
+        </article>
+        {% empty %}
+        <p>Aucune publication pour le moment. Soyez le premier à publier !</p>
+        {% endfor %}
+    </section>
+</main>
 </body>
 </html>

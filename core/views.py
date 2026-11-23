@@ -1,7 +1,9 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import User
 from django.contrib import messages
+
 from .models import Post, Comment, Like, Profile
 from .forms import UserRegisterForm
 
@@ -15,9 +17,10 @@ def home(request):
 
         if content:
             Post.objects.create(
-                author=request.user.username,
-                content=content
-            )
+    author=request.user.username,
+    content=content,
+    image=request.FILES.get("image")
+)
 
         return redirect("home")
 
@@ -179,6 +182,9 @@ def profile_view(request):
             "city", ""
         ).strip()
 
+        if request.FILES.get("photo"):
+            profile.photo = request.FILES["photo"]
+
         profile.save()
 
         messages.success(
@@ -191,4 +197,29 @@ def profile_view(request):
 
     return render(request, "core/profile.html", {
         "profile": profile
+    })
+
+
+def public_profile(request, username):
+    member = User.objects.filter(username=username).first()
+
+    if member is None:
+        messages.info(
+            request,
+            "Ce profil n'est pas disponible."
+        )
+        return redirect("home")
+
+    profile, created = Profile.objects.get_or_create(
+        user=member
+    )
+
+    posts = Post.objects.filter(
+        author=member.username
+    ).order_by("-created_at")
+
+    return render(request, "core/public_profile.html", {
+        "member": member,
+        "profile": profile,
+        "posts": posts
     })
